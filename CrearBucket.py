@@ -5,20 +5,11 @@ from botocore.exceptions import ClientError
 
 s3 = boto3.client("s3")
 REGION = os.environ.get("AWS_REGION", "us-east-1")
-PREFIX = os.environ["BUCKET_PREFIX"]
 
 def lambda_handler(event, context):
     try:
         body = json.loads(event.get("body") or "{}")
         bucket = body["bucket"]
-
-        if not bucket.startswith(PREFIX):
-            return {
-                "statusCode": 400,
-                "body": json.dumps({
-                    "error": f"El bucket debe empezar con {PREFIX}"
-                })
-            }
 
         params = {"Bucket": bucket}
 
@@ -40,7 +31,7 @@ def lambda_handler(event, context):
     except (KeyError, ValueError, TypeError):
         return {
             "statusCode": 400,
-            "body": json.dumps({"error": "JSON o bucket inválido"})
+            "body": json.dumps({"error": "Datos inválidos"})
         }
 
     except ClientError as e:

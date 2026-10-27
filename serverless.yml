@@ -1,45 +1,21 @@
 service: api-s3
 
+org: christianestrada
+
 provider:
   name: aws
   runtime: python3.12
   region: us-east-1
-  stage: dev
+
+  role: arn:aws:iam::184314369952:role/LabRole
+
   memorySize: 256
   timeout: 15
-
-  environment:
-    BUCKET_PREFIX: taller3-s3-${aws:accountId}-${sls:stage}-
-
-  iam:
-    role:
-      statements:
-        - Effect: Allow
-          Action:
-            - s3:ListAllMyBuckets
-          Resource: "*"
-
-        - Effect: Allow
-          Action:
-            - s3:CreateBucket
-          Resource:
-            - arn:aws:s3:::taller3-s3-${aws:accountId}-${sls:stage}-*
-
-        - Effect: Allow
-          Action:
-            - s3:ListBucket
-          Resource:
-            - arn:aws:s3:::taller3-s3-${aws:accountId}-${sls:stage}-*
-
-        - Effect: Allow
-          Action:
-            - s3:PutObject
-          Resource:
-            - arn:aws:s3:::taller3-s3-${aws:accountId}-${sls:stage}-*/*
 
 functions:
   listarBuckets:
     handler: ListarBuckets.lambda_handler
+    memorySize: 256
     events:
       - http:
           path: s3/lista-buckets
@@ -47,6 +23,7 @@ functions:
 
   listarObjetos:
     handler: ListarObjetos.lambda_handler
+    memorySize: 512
     events:
       - http:
           path: s3/bucket/lista-objetos

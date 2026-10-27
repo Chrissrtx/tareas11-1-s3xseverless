@@ -2,12 +2,10 @@ import boto3
 import json
 import base64
 import binascii
-import os
 import mimetypes
 from botocore.exceptions import ClientError
 
 s3 = boto3.client("s3")
-PREFIX = os.environ["BUCKET_PREFIX"]
 
 def lambda_handler(event, context):
     try:
@@ -18,21 +16,12 @@ def lambda_handler(event, context):
         nombre = body["nombre_archivo"]
         contenido = body["contenido_base64"]
 
-        if not bucket.startswith(PREFIX):
-            raise ValueError("Bucket no permitido")
+        archivo = base64.b64decode(
+            contenido,
+            validate=True
+        )
 
-        if (
-            not directorio
-            or not nombre
-            or "/" in nombre
-            or "\\" in nombre
-            or any(p in (".", "..") for p in directorio.split("/"))
-        ):
-            raise ValueError("Ruta o nombre de archivo inválido")
-
-        archivo = base64.b64decode(contenido, validate=True)
-        ruta = f"{directorio}/{nombre}"
-
+        ruta = f"{directorio}/{nombre}" if directorio else nombre
         tipo, _ = mimetypes.guess_type(nombre)
 
         s3.put_object(

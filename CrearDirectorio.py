@@ -1,10 +1,8 @@
 import boto3
 import json
-import os
 from botocore.exceptions import ClientError
 
 s3 = boto3.client("s3")
-PREFIX = os.environ["BUCKET_PREFIX"]
 
 def lambda_handler(event, context):
     try:
@@ -13,11 +11,8 @@ def lambda_handler(event, context):
         bucket = body["bucket"]
         directorio = body["directorio"].strip("/")
 
-        if not bucket.startswith(PREFIX) or not directorio:
-            raise ValueError("Bucket o directorio inválido")
-
-        if any(p in (".", "..") for p in directorio.split("/")):
-            raise ValueError("Ruta no permitida")
+        if not directorio:
+            raise ValueError("Directorio vacío")
 
         ruta = directorio + "/"
 
@@ -30,7 +25,7 @@ def lambda_handler(event, context):
         return {
             "statusCode": 201,
             "body": json.dumps({
-                "mensaje": "Directorio creado",
+                "mensaje": "Directorio creado correctamente",
                 "bucket": bucket,
                 "directorio": ruta
             })
