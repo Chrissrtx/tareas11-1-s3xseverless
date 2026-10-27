@@ -1,0 +1,77 @@
+service: api-s3
+
+provider:
+  name: aws
+  runtime: python3.12
+  region: us-east-1
+  stage: dev
+  memorySize: 256
+  timeout: 15
+
+  environment:
+    BUCKET_PREFIX: taller3-s3-${aws:accountId}-${sls:stage}-
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - s3:ListAllMyBuckets
+          Resource: "*"
+
+        - Effect: Allow
+          Action:
+            - s3:CreateBucket
+          Resource:
+            - arn:aws:s3:::taller3-s3-${aws:accountId}-${sls:stage}-*
+
+        - Effect: Allow
+          Action:
+            - s3:ListBucket
+          Resource:
+            - arn:aws:s3:::taller3-s3-${aws:accountId}-${sls:stage}-*
+
+        - Effect: Allow
+          Action:
+            - s3:PutObject
+          Resource:
+            - arn:aws:s3:::taller3-s3-${aws:accountId}-${sls:stage}-*/*
+
+functions:
+  listarBuckets:
+    handler: ListarBuckets.lambda_handler
+    events:
+      - http:
+          path: s3/lista-buckets
+          method: get
+
+  listarObjetos:
+    handler: ListarObjetos.lambda_handler
+    events:
+      - http:
+          path: s3/bucket/lista-objetos
+          method: post
+
+  crearBucket:
+    handler: CrearBucket.lambda_handler
+    memorySize: 128
+    events:
+      - http:
+          path: s3/crear-bucket
+          method: post
+
+  crearDirectorio:
+    handler: CrearDirectorio.lambda_handler
+    memorySize: 128
+    events:
+      - http:
+          path: s3/crear-directorio
+          method: post
+
+  subirArchivo:
+    handler: SubirArchivo.lambda_handler
+    memorySize: 256
+    events:
+      - http:
+          path: s3/subir-archivo
+          method: post
